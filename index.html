@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCU Checklist</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>MCU Checklist</h1>
+          <p class="sub">公開順でチェック・評価・画像共有できる非ログイン型サイト</p>
+        </div>
+        <div class="top-actions">
+          <button id="saveImageBtn" class="primary">画像を書き出す</button>
+          <button id="shareBtn">共有</button>
+        </div>
+      </header>
+
+      <section class="notice">
+        <p>
+          データはこのブラウザに保存されます。アカウント不要です。別端末へ移すときはJSONバックアップを使ってください。
+        </p>
+      </section>
+
+      <section class="controls card">
+        <div class="control-grid">
+          <label>
+            <span>検索</span>
+            <input id="searchInput" type="text" placeholder="邦題 / 英題で検索" />
+          </label>
+          <label>
+            <span>表示</span>
+            <select id="statusFilter">
+              <option value="all">すべて</option>
+              <option value="watched">視聴済み</option>
+              <option value="unwatched">未視聴</option>
+              <option value="rated">評価あり</option>
+              <option value="upcoming">未公開</option>
+            </select>
+          </label>
+          <label>
+            <span>種別</span>
+            <select id="typeFilter">
+              <option value="all">すべて</option>
+              <option value="film">映画</option>
+              <option value="series">シリーズ</option>
+              <option value="special">スペシャル</option>
+              <option value="short">短編</option>
+            </select>
+          </label>
+          <label>
+            <span>並び順</span>
+            <select id="sortOrder">
+              <option value="asc">公開順</option>
+              <option value="desc">新しい順</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="toggle-grid two-col">
+          <label class="inline-toggle"><input id="hideUpcomingToggle" type="checkbox" />未公開作品を隠す</label>
+          <label class="inline-toggle"><input id="imageWatchedOnlyToggle" type="checkbox" />画像では視聴済みだけ表示</label>
+          <label class="inline-toggle"><input id="hideRatingsToggle" type="checkbox" />画像では評価を隠す</label>
+          <label class="inline-toggle"><input id="imageCompactToggle" type="checkbox" />画像をコンパクト表示にする</label>
+        </div>
+
+        <div class="control-grid secondary-grid">
+          <label>
+            <span>画像テーマ</span>
+            <select id="imageThemeSelect">
+              <option value="dark">ダーク</option>
+              <option value="light">ライト</option>
+            </select>
+          </label>
+          <label>
+            <span>画像タイトル</span>
+            <input id="imageTitleInput" type="text" placeholder="例: My MCU Checklist" />
+          </label>
+          <label>
+            <span>画像サブタイトル</span>
+            <input id="imageSubtitleInput" type="text" placeholder="例: 公開順チェックリスト" />
+          </label>
+          <label>
+            <span>画像の並び順</span>
+            <select id="imageSortOrder">
+              <option value="asc">公開順</option>
+              <option value="desc">新しい順</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="action-row">
+          <button id="markAllClearBtn">全チェック解除</button>
+          <button id="exportJsonBtn">JSONを書き出す</button>
+          <label class="file-btn">
+            JSONを読み込む
+            <input id="importJsonInput" type="file" accept="application/json" />
+          </label>
+        </div>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat card">
+          <strong id="statWatched">0</strong>
+          <span>視聴済み</span>
+        </article>
+        <article class="stat card">
+          <strong id="statTotal">0</strong>
+          <span>総作品数</span>
+        </article>
+        <article class="stat card">
+          <strong id="statAverage">-</strong>
+          <span>平均評価</span>
+        </article>
+        <article class="stat card">
+          <strong id="statProgress">0%</strong>
+          <span>進捗</span>
+        </article>
+      </section>
+
+      <main class="main-grid">
+        <section class="card list-card">
+          <div class="section-head">
+            <h2>作品一覧</h2>
+            <span id="visibleCount">0件</span>
+          </div>
+          <div class="list-head row-item muted">
+            <div>視聴</div>
+            <div>作品</div>
+            <div>評価</div>
+          </div>
+          <div id="itemsList" class="items-list"></div>
+        </section>
+
+        <aside class="card preview-card">
+          <div class="section-head">
+            <h2>共有画像プレビュー</h2>
+            <span>PNG出力用</span>
+          </div>
+          <div id="shareCard" class="share-card theme-dark">
+            <div class="share-header">
+              <div>
+                <div id="shareTitle" class="share-title">My MCU Checklist</div>
+                <div id="shareSubtitle" class="share-subtitle">公開順チェックリスト</div>
+              </div>
+              <div class="share-badge">No Account</div>
+            </div>
+            <div id="shareSummary" class="share-summary"></div>
+            <div id="shareItems" class="share-items"></div>
+            <div class="share-footer">Generated by MCU Checklist</div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  </body>
+</html>
