@@ -147,7 +147,6 @@ function bindEvents() {
   els.applyCodeBtn.addEventListener("click", applyRecoveryCode);
   els.copyCodeBtn.addEventListener("click", copyRecoveryCode);
   els.showIntroBtn.addEventListener("click", () => openIntroModal(false));
-  els.openGuideFromCardBtn.addEventListener("click", () => openIntroModal(false));
   els.closeIntroBtn.addEventListener("click", closeIntroModal);
   els.introUnderstoodBtn.addEventListener("click", closeIntroModal);
   els.hideIntroNextTime.addEventListener("change", (e) => {
