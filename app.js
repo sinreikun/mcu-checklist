@@ -1,5 +1,6 @@
 const STORAGE_KEY = "mcu-checklist-v4";
-const APP_VERSION = 4;
+const APP_VERSION = 5;
+const INTRO_PREF_KEY = "mcu-checklist-intro-hidden";
 
 const MCU_ITEMS = [
   { id: "iron-man", titleJa: "アイアンマン", titleEn: "Iron Man", type: "film", releaseDate: "2008-05-02", year: 2008, phase: 1, upcoming: false },
@@ -91,7 +92,10 @@ const DEFAULT_SETTINGS = {
 
 const state = {
   items: {},
-  settings: { ...DEFAULT_SETTINGS }
+  settings: { ...DEFAULT_SETTINGS },
+  ui: {
+    hideIntroNextTime: false
+  }
 };
 
 const els = {};
@@ -99,8 +103,10 @@ const els = {};
 document.addEventListener("DOMContentLoaded", () => {
   bindElements();
   loadState();
+  loadIntroPreference();
   bindEvents();
   render();
+  maybeOpenIntroOnFirstVisit();
 });
 
 function bindElements() {
@@ -111,7 +117,8 @@ function bindElements() {
     "itemsList", "visibleCount", "statWatched", "statTotal", "statAverage", "statProgress",
     "shareItems", "shareSummary", "shareTitle", "shareSubtitle", "saveImageBtn", "shareBtn",
     "markAllClearBtn", "shareCard", "generateCodeBtn", "applyCodeBtn", "copyCodeBtn",
-    "recoveryCodeArea", "recoveryHint"
+    "recoveryCodeArea", "recoveryHint", "showIntroBtn", "openGuideFromCardBtn",
+    "introModal", "closeIntroBtn", "introUnderstoodBtn", "hideIntroNextTime"
   ];
   ids.forEach((id) => {
     els[id] = document.getElementById(id);
@@ -138,6 +145,63 @@ function bindEvents() {
   els.generateCodeBtn.addEventListener("click", generateRecoveryCode);
   els.applyCodeBtn.addEventListener("click", applyRecoveryCode);
   els.copyCodeBtn.addEventListener("click", copyRecoveryCode);
+  els.showIntroBtn.addEventListener("click", () => openIntroModal(false));
+  els.openGuideFromCardBtn.addEventListener("click", () => openIntroModal(false));
+  els.closeIntroBtn.addEventListener("click", closeIntroModal);
+  els.introUnderstoodBtn.addEventListener("click", closeIntroModal);
+  els.hideIntroNextTime.addEventListener("change", (e) => {
+    state.ui.hideIntroNextTime = e.target.checked;
+    persistIntroPreference();
+  });
+  els.introModal.addEventListener("click", (event) => {
+    if (event.target instanceof HTMLElement && event.target.dataset.closeIntro === "true") {
+      closeIntroModal();
+    }
+  });
+}
+
+
+function loadIntroPreference() {
+  try {
+    state.ui.hideIntroNextTime = localStorage.getItem(INTRO_PREF_KEY) === "1";
+  } catch (error) {
+    console.error("Failed to load intro preference", error);
+  }
+  if (els.hideIntroNextTime) {
+    els.hideIntroNextTime.checked = state.ui.hideIntroNextTime;
+  }
+}
+
+function persistIntroPreference() {
+  try {
+    if (state.ui.hideIntroNextTime) {
+      localStorage.setItem(INTRO_PREF_KEY, "1");
+    } else {
+      localStorage.removeItem(INTRO_PREF_KEY);
+    }
+  } catch (error) {
+    console.error("Failed to save intro preference", error);
+  }
+}
+
+function maybeOpenIntroOnFirstVisit() {
+  if (state.ui.hideIntroNextTime) return;
+  openIntroModal(true);
+}
+
+function openIntroModal(isAutoOpen = false) {
+  els.introModal.classList.add("open");
+  els.introModal.setAttribute("aria-hidden", "false");
+  if (!isAutoOpen) {
+    els.hideIntroNextTime.checked = state.ui.hideIntroNextTime;
+  }
+}
+
+function closeIntroModal() {
+  state.ui.hideIntroNextTime = Boolean(els.hideIntroNextTime.checked);
+  persistIntroPreference();
+  els.introModal.classList.remove("open");
+  els.introModal.setAttribute("aria-hidden", "true");
 }
 
 function loadState() {

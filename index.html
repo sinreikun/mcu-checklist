@@ -16,6 +16,7 @@
           <p class="sub">公開順でチェック・評価・画像共有できる非ログイン型サイト</p>
         </div>
         <div class="top-actions">
+          <button id="showIntroBtn">初回説明を見る</button>
           <button id="saveImageBtn" class="primary">画像を書き出す</button>
           <button id="shareBtn">共有</button>
         </div>
@@ -23,8 +24,36 @@
 
       <section class="notice">
         <p>
-          データはこのブラウザに保存されます。別端末へ移すときは復元コードを作成してコピーし、移行先で貼り付けてください。
+          ログイン不要。チェック内容と評価はこのブラウザの中だけに保存され、サーバーへ送信されません。別端末へ移すときだけ復元コードを使ってください。
         </p>
+      </section>
+
+      <section class="trust-card card">
+        <div class="section-head">
+          <h2>安心して使うために</h2>
+          <span>いつでも確認できます</span>
+        </div>
+        <div class="trust-grid">
+          <article class="trust-item">
+            <strong>ログイン不要</strong>
+            <p>アカウント登録やログインはありません。名前、メールアドレス、SNS連携も不要です。</p>
+          </article>
+          <article class="trust-item">
+            <strong>データ収集なし</strong>
+            <p>視聴チェック、評価、表示設定はあなたのブラウザ内にだけ保存されます。</p>
+          </article>
+          <article class="trust-item">
+            <strong>外部送信なし</strong>
+            <p>あなたが付けたチェック内容や評価を、このサイトの運営側が受け取る仕組みはありません。</p>
+          </article>
+          <article class="trust-item">
+            <strong>別端末へは自分で移動</strong>
+            <p>他の端末へ移すときだけ、あなた自身で復元コードをコピーして貼り付けます。自動同期はしません。</p>
+          </article>
+        </div>
+        <div class="trust-actions">
+          <button id="openGuideFromCardBtn">初回説明をもう一度開く</button>
+        </div>
       </section>
 
       <section class="controls card">
@@ -163,6 +192,55 @@
           </div>
         </aside>
       </main>
+    </div>
+  
+    <div id="introModal" class="intro-modal" aria-hidden="true">
+      <div class="intro-backdrop" data-close-intro="true"></div>
+      <section class="intro-dialog card" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+        <div class="intro-header">
+          <div>
+            <div class="intro-kicker">最初にこれだけ</div>
+            <h2 id="introTitle">このサイトは何をする場所で、何をしないのか</h2>
+          </div>
+          <button id="closeIntroBtn" class="intro-close" aria-label="説明を閉じる">×</button>
+        </div>
+
+        <div class="intro-points">
+          <article class="intro-point">
+            <strong>1. ログインはいりません</strong>
+            <p>開いたらそのまま使えます。アカウント作成、メール登録、SNS連携はありません。</p>
+          </article>
+          <article class="intro-point">
+            <strong>2. あなたの情報は集めません</strong>
+            <p>このサイトは、あなたが付けたチェックや星評価を集めるためのサイトではありません。</p>
+          </article>
+          <article class="intro-point">
+            <strong>3. 保存先は今使っているブラウザの中だけです</strong>
+            <p>チェック内容、評価、表示設定はあなたの端末のブラウザ内に保存されます。外のサーバーへ送信されません。</p>
+          </article>
+          <article class="intro-point">
+            <strong>4. 別の端末に勝手に広がりません</strong>
+            <p>PCで付けたチェックがスマホへ自動で送られることはありません。移したいときだけ復元コードを自分で使います。</p>
+          </article>
+          <article class="intro-point">
+            <strong>5. 配信や通話で勝手に見られることはありません</strong>
+            <p>あなたが画面共有しない限り、視聴者や他人に見えることはありません。</p>
+          </article>
+        </div>
+
+        <div class="intro-note">
+          この説明は初回に表示されます。あとで確認したいときは画面右上の「初回説明を見る」からいつでも開けます。
+        </div>
+
+        <label class="intro-checkbox">
+          <input id="hideIntroNextTime" type="checkbox" />
+          次回からこの説明を自動表示しない
+        </label>
+
+        <div class="intro-actions">
+          <button id="introUnderstoodBtn" class="primary">わかった</button>
+        </div>
+      </section>
     </div>
   </body>
 </html>

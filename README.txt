@@ -1,24 +1,22 @@
-MCU Checklist v4 Complete
+MCU Checklist v5
 
-This is a static web app.
+この版では、初回だけ表示される説明モーダルと、あとから再表示できる導線を追加しました。
 
-How to use:
-1. Open index.html in a browser.
-2. Check watched items and set ratings.
-3. Use the image settings to switch dark/light mode or compact display.
-4. Click the image export button to save a PNG.
-5. Click "復元コードを作成" to generate a transfer code.
-6. Copy the code and paste it on another device, then click "復元コードを反映".
+主な追加点
+- 初回アクセス時に「このサイトは何をする場所で、何をしないのか」を表示
+- 「次回からこの説明を自動表示しない」チェックを追加
+- 画面右上の「初回説明を見る」からいつでも再表示可能
+- ページ内に「安心して使うために」説明カードを追加
+- 復元コード方式はそのまま維持
 
-What changed in v4:
-- JSON export/import was removed.
-- Recovery-code based transfer was added.
-- A dedicated code area was added to display, copy, and paste recovery codes.
-- Existing local data from v1, v2, or v3 is migrated automatically to v4 on the same browser.
+使い方
+1. index.html をブラウザで開く
+2. 作品をチェックし、必要なら星評価を付ける
+3. 別端末へ移すときは「復元コードを作成」を押してコピー
+4. 移行先でコードを貼り付け、「復元コードを反映」を押す
+5. 共有画像は「画像を書き出す」から PNG 保存
 
-Notes:
-- No account is required.
-- Data is stored in the browser via localStorage.
-- Recovery codes do not sync automatically; they are copy-and-paste transfer snapshots.
-- Image export uses html-to-image from a CDN, so internet access is needed for that library unless you self-host it.
-- Japanese titles are displayed where an established Japanese title is available; some future or not-yet-localized titles remain in English.
+公開時の補足
+- このサイトは静的サイトです
+- GitHub Pages / Netlify などでそのまま公開できます
+- データはユーザーのブラウザ内に保存されます
