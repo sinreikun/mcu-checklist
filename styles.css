@@ -223,25 +223,217 @@ label span {
 }
 .star-btn.on { color: var(--gold); }
 .preview-card { position: sticky; top: 16px; }
+
 .share-card {
   width: 100%;
-  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 24px;
   padding: 20px;
-}
-.share-card.theme-dark {
-  background:
+  --share-bg:
     radial-gradient(circle at top right, rgba(230,36,41,0.25), transparent 28%),
     linear-gradient(180deg, #10172c, #0a1020);
-  color: #edf2ff;
+  --share-text: #edf2ff;
+  --share-muted: #cad5f4;
+  --share-border: rgba(255,255,255,0.08);
+  --share-badge-bg: rgba(255,255,255,0.08);
+  --share-stat-bg: rgba(255,255,255,0.04);
+  --share-stat-border: rgba(255,255,255,0.08);
+  --share-item-bg: rgba(255,255,255,0.03);
+  --share-item-border: rgba(255,255,255,0.08);
+  background: var(--share-bg);
+  color: var(--share-text);
+  border: 1px solid var(--share-border);
 }
+
+.share-card[class*="theme-"] .share-subtitle,
+.share-card[class*="theme-"] .share-item-meta,
+.share-card[class*="theme-"] .share-footer,
+.share-card[class*="theme-"] .share-stat span {
+  color: var(--share-muted);
+}
+
+.share-card[class*="theme-"] .share-badge {
+  background: var(--share-badge-bg);
+}
+
+.share-card[class*="theme-"] .share-stat {
+  background: var(--share-stat-bg);
+  border: 1px solid var(--share-stat-border);
+}
+
+.share-card[class*="theme-"] .share-item {
+  background: var(--share-item-bg);
+  border: 1px solid var(--share-item-border);
+}
+
+.share-card.theme-dark {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(230,36,41,0.25), transparent 28%),
+    linear-gradient(180deg, #10172c, #0a1020);
+  --share-text: #edf2ff;
+  --share-muted: #cad5f4;
+  --share-border: rgba(255,255,255,0.08);
+  --share-badge-bg: rgba(255,255,255,0.08);
+  --share-stat-bg: rgba(255,255,255,0.04);
+  --share-stat-border: rgba(255,255,255,0.08);
+  --share-item-bg: rgba(255,255,255,0.03);
+  --share-item-border: rgba(255,255,255,0.08);
+}
+
 .share-card.theme-light {
-  background:
+  --share-bg:
     radial-gradient(circle at top right, rgba(230,36,41,0.12), transparent 28%),
     linear-gradient(180deg, #ffffff, #eef3ff);
-  color: #172039;
-  border-color: rgba(23, 32, 57, 0.12);
+  --share-text: #172039;
+  --share-muted: #5d6785;
+  --share-border: rgba(23, 32, 57, 0.12);
+  --share-badge-bg: rgba(23, 32, 57, 0.08);
+  --share-stat-bg: rgba(23, 32, 57, 0.04);
+  --share-stat-border: rgba(23, 32, 57, 0.10);
+  --share-item-bg: rgba(255,255,255,0.76);
+  --share-item-border: rgba(23, 32, 57, 0.10);
 }
+
+.share-card.theme-ironman {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(255, 212, 59, 0.24), transparent 30%),
+    linear-gradient(180deg, #581218, #1e0b10 58%, #0c0b10);
+  --share-text: #fff0da;
+  --share-muted: #f2c88d;
+  --share-border: rgba(255, 196, 76, 0.18);
+  --share-badge-bg: rgba(255, 196, 76, 0.12);
+  --share-stat-bg: rgba(255, 196, 76, 0.08);
+  --share-stat-border: rgba(255, 196, 76, 0.18);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(255, 196, 76, 0.14);
+}
+
+.share-card.theme-captain-america {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 24%),
+    linear-gradient(180deg, #123a78, #0b1f46 60%, #5a101d);
+  --share-text: #eef4ff;
+  --share-muted: #c5d6ff;
+  --share-border: rgba(255,255,255,0.14);
+  --share-badge-bg: rgba(255,255,255,0.10);
+  --share-stat-bg: rgba(255,255,255,0.06);
+  --share-stat-border: rgba(255,255,255,0.12);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(255,255,255,0.10);
+}
+
+.share-card.theme-thor {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(142, 221, 255, 0.22), transparent 28%),
+    linear-gradient(180deg, #2a3550, #131b2e 58%, #091019);
+  --share-text: #edf7ff;
+  --share-muted: #bed8ef;
+  --share-border: rgba(142, 221, 255, 0.18);
+  --share-badge-bg: rgba(142, 221, 255, 0.10);
+  --share-stat-bg: rgba(255,255,255,0.05);
+  --share-stat-border: rgba(142, 221, 255, 0.14);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(142, 221, 255, 0.10);
+}
+
+.share-card.theme-hulk {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(151, 255, 120, 0.20), transparent 28%),
+    linear-gradient(180deg, #183d1d, #0d2211 58%, #0a1110);
+  --share-text: #ecffee;
+  --share-muted: #bfe5c1;
+  --share-border: rgba(151, 255, 120, 0.16);
+  --share-badge-bg: rgba(151, 255, 120, 0.10);
+  --share-stat-bg: rgba(151, 255, 120, 0.06);
+  --share-stat-border: rgba(151, 255, 120, 0.14);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(151, 255, 120, 0.10);
+}
+
+.share-card.theme-black-panther {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(182, 139, 255, 0.18), transparent 30%),
+    linear-gradient(180deg, #14101c, #09070d 58%, #020203);
+  --share-text: #f6f0ff;
+  --share-muted: #cab6f5;
+  --share-border: rgba(182, 139, 255, 0.16);
+  --share-badge-bg: rgba(182, 139, 255, 0.10);
+  --share-stat-bg: rgba(255,255,255,0.04);
+  --share-stat-border: rgba(182, 139, 255, 0.12);
+  --share-item-bg: rgba(255,255,255,0.03);
+  --share-item-border: rgba(182, 139, 255, 0.10);
+}
+
+.share-card.theme-doctor-strange {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(255, 174, 91, 0.22), transparent 28%),
+    linear-gradient(180deg, #57151a, #1d0d20 58%, #0b0d16);
+  --share-text: #fff2e5;
+  --share-muted: #f0c4a0;
+  --share-border: rgba(255, 174, 91, 0.18);
+  --share-badge-bg: rgba(255, 174, 91, 0.10);
+  --share-stat-bg: rgba(255,255,255,0.04);
+  --share-stat-border: rgba(255, 174, 91, 0.14);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(255, 174, 91, 0.10);
+}
+
+.share-card.theme-spider-man {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(120, 180, 255, 0.22), transparent 28%),
+    linear-gradient(180deg, #8a121f, #2e0e1b 58%, #0f1120);
+  --share-text: #fff1f4;
+  --share-muted: #f3c6d0;
+  --share-border: rgba(120, 180, 255, 0.18);
+  --share-badge-bg: rgba(120, 180, 255, 0.10);
+  --share-stat-bg: rgba(255,255,255,0.04);
+  --share-stat-border: rgba(120, 180, 255, 0.14);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(120, 180, 255, 0.10);
+}
+
+.share-card.theme-captain-marvel {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(255, 210, 79, 0.24), transparent 28%),
+    linear-gradient(180deg, #173366, #0c1a35 56%, #5a1120);
+  --share-text: #fff6e9;
+  --share-muted: #f2d7a0;
+  --share-border: rgba(255, 210, 79, 0.18);
+  --share-badge-bg: rgba(255, 210, 79, 0.11);
+  --share-stat-bg: rgba(255,255,255,0.05);
+  --share-stat-border: rgba(255, 210, 79, 0.14);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(255, 210, 79, 0.10);
+}
+
+.share-card.theme-loki {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(255, 221, 102, 0.18), transparent 26%),
+    linear-gradient(180deg, #20422a, #0d2114 58%, #0a1210);
+  --share-text: #f6ffeb;
+  --share-muted: #cee2b1;
+  --share-border: rgba(255, 221, 102, 0.18);
+  --share-badge-bg: rgba(255, 221, 102, 0.10);
+  --share-stat-bg: rgba(255,255,255,0.04);
+  --share-stat-border: rgba(255, 221, 102, 0.14);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(255, 221, 102, 0.10);
+}
+
+.share-card.theme-scarlet-witch {
+  --share-bg:
+    radial-gradient(circle at top right, rgba(255, 95, 143, 0.18), transparent 28%),
+    linear-gradient(180deg, #490e1f, #180813 58%, #0c0810);
+  --share-text: #ffeef5;
+  --share-muted: #f0bfd2;
+  --share-border: rgba(255, 95, 143, 0.18);
+  --share-badge-bg: rgba(255, 95, 143, 0.10);
+  --share-stat-bg: rgba(255,255,255,0.04);
+  --share-stat-border: rgba(255, 95, 143, 0.14);
+  --share-item-bg: rgba(255,255,255,0.04);
+  --share-item-border: rgba(255, 95, 143, 0.10);
+}
+
+
 .share-header {
   display: flex;
   justify-content: space-between;

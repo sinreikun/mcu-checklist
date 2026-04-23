@@ -1,7 +1,23 @@
-const STORAGE_KEY = "mcu-checklist-v4";
-const APP_VERSION = 5;
+const STORAGE_KEY = "mcu-checklist-v8";
+const APP_VERSION = 8;
 const INTRO_PREF_KEY = "mcu-checklist-intro-hidden";
 const INTRO_SEEN_KEY = "mcu-checklist-intro-seen";
+
+const IMAGE_THEMES = [
+  { value: "dark", label: "ダーク", backgroundColor: "#0a1020" },
+  { value: "light", label: "ライト", backgroundColor: "#f4f7ff" },
+  { value: "ironman", label: "アイアンマン", backgroundColor: "#1e0b10" },
+  { value: "captain-america", label: "キャプテン・アメリカ", backgroundColor: "#0b1f46" },
+  { value: "thor", label: "ソー", backgroundColor: "#131b2e" },
+  { value: "hulk", label: "ハルク", backgroundColor: "#0d2211" },
+  { value: "black-panther", label: "ブラックパンサー", backgroundColor: "#09070d" },
+  { value: "doctor-strange", label: "ドクター・ストレンジ", backgroundColor: "#1d0d20" },
+  { value: "spider-man", label: "スパイダーマン", backgroundColor: "#2e0e1b" },
+  { value: "captain-marvel", label: "キャプテン・マーベル", backgroundColor: "#0c1a35" },
+  { value: "loki", label: "ロキ", backgroundColor: "#0d2114" },
+  { value: "scarlet-witch", label: "スカーレット・ウィッチ", backgroundColor: "#180813" }
+];
+
 
 const MCU_ITEMS = [
   { id: "iron-man", titleJa: "アイアンマン", titleEn: "Iron Man", type: "film", releaseDate: "2008-05-02", year: 2008, phase: 1, upcoming: false },
@@ -246,7 +262,7 @@ function migrateLegacyState() {
   try {
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    const legacyKeys = ["mcu-checklist-v3", "mcu-checklist-v2", "mcu-checklist-v1"];
+    const legacyKeys = ["mcu-checklist-v7", "mcu-checklist-v6", "mcu-checklist-v5", "mcu-checklist-v4", "mcu-checklist-v3", "mcu-checklist-v2", "mcu-checklist-v1"];
     for (const key of legacyKeys) {
       const legacyRaw = localStorage.getItem(key);
       if (!legacyRaw) continue;
@@ -295,7 +311,7 @@ function sanitizeSettings(input) {
     imageWatchedOnly: Boolean(merged.imageWatchedOnly),
     imageHideRatings: Boolean(merged.imageHideRatings),
     imageCompact: Boolean(merged.imageCompact),
-    imageTheme: ["dark", "light"].includes(merged.imageTheme) ? merged.imageTheme : DEFAULT_SETTINGS.imageTheme,
+    imageTheme: IMAGE_THEMES.some((theme) => theme.value === merged.imageTheme) ? merged.imageTheme : DEFAULT_SETTINGS.imageTheme,
     imageTitle: typeof merged.imageTitle === "string" ? merged.imageTitle : DEFAULT_SETTINGS.imageTitle,
     imageSubtitle: typeof merged.imageSubtitle === "string" ? merged.imageSubtitle : DEFAULT_SETTINGS.imageSubtitle,
     imageSortOrder: ["asc", "desc"].includes(merged.imageSortOrder) ? merged.imageSortOrder : DEFAULT_SETTINGS.imageSortOrder
@@ -490,8 +506,9 @@ function renderShareCard() {
   const films = MCU_ITEMS.filter((item) => getEntry(item.id).watched && item.type === "film").length;
   const other = MCU_ITEMS.filter((item) => getEntry(item.id).watched && item.type !== "film").length;
 
-  els.shareCard.classList.toggle("theme-dark", state.settings.imageTheme === "dark");
-  els.shareCard.classList.toggle("theme-light", state.settings.imageTheme === "light");
+  IMAGE_THEMES.forEach((theme) => {
+    els.shareCard.classList.toggle(`theme-${theme.value}`, state.settings.imageTheme === theme.value);
+  });
   els.shareCard.classList.toggle("compact", state.settings.imageCompact);
 
   els.shareTitle.textContent = state.settings.imageTitle.trim() || "My MCU Checklist";
@@ -740,7 +757,8 @@ function base64UrlToText(encoded) {
 }
 
 function getShareBackgroundColor() {
-  return state.settings.imageTheme === "light" ? "#f4f7ff" : "#0a1020";
+  const theme = IMAGE_THEMES.find((entry) => entry.value === state.settings.imageTheme);
+  return theme ? theme.backgroundColor : "#0a1020";
 }
 
 async function saveShareImage() {
@@ -759,32 +777,59 @@ async function saveShareImage() {
 
 async function shareImageOrUrl() {
   try {
-    if (!navigator.share || !navigator.canShare) {
-      await saveShareImage();
-      return;
-    }
-
+    const filename = `mcu-checklist-${new Date().toISOString().slice(0, 10)}.png`;
     const dataUrl = await window.htmlToImage.toPng(els.shareCard, {
       cacheBust: true,
       pixelRatio: 2,
       backgroundColor: getShareBackgroundColor()
     });
-    const file = dataUrlToFile(dataUrl, `mcu-checklist-${new Date().toISOString().slice(0, 10)}.png`);
-    if (navigator.canShare({ files: [file] })) {
+    const file = dataUrlToFile(dataUrl, filename);
+    const shareText = buildXShareText();
+    const shareUrl = location.href;
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({
         title: state.settings.imageTitle.trim() || "MCU Checklist",
-        text: state.settings.imageTitle.trim() || "MCU Checklist",
+        text: shareText,
+        url: shareUrl,
         files: [file]
       });
-    } else {
-      downloadDataUrl(dataUrl, file.name);
+      return;
     }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      } catch (error) {
+        console.warn("Failed to copy share text", error);
+      }
+    }
+
+    downloadDataUrl(dataUrl, file.name);
+    openXIntent(shareText, shareUrl);
+
+    window.alert("このブラウザではXの投稿画面へ画像を直接添付できないため、画像を保存し、本文入りのX投稿画面を開きました。画像は手動で添付してください。");
   } catch (error) {
     if (error && error.name === "AbortError") return;
     console.error(error);
     window.alert("共有に失敗したため、画像保存に切り替えます。");
     await saveShareImage();
   }
+}
+
+function buildXShareText() {
+  const title = (state.settings.imageTitle || "MCU Checklist").trim();
+  const subtitle = (state.settings.imageSubtitle || "").trim();
+  if (subtitle) {
+    return `${title}\n${subtitle}`;
+  }
+  return title;
+}
+
+function openXIntent(text, url) {
+  const intentUrl = new URL("https://x.com/intent/post");
+  intentUrl.searchParams.set("text", `${text}\n${url}`);
+  window.open(intentUrl.toString(), "_blank", "noopener,noreferrer");
 }
 
 function downloadDataUrl(dataUrl, filename) {
