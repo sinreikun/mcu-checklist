@@ -23,7 +23,7 @@
 
       <section class="notice">
         <p>
-          データはこのブラウザに保存されます。アカウント不要です。別端末へ移すときはJSONバックアップを使ってください。
+          データはこのブラウザに保存されます。別端末へ移すときは復元コードを作成してコピーし、移行先で貼り付けてください。
         </p>
       </section>
 
@@ -96,11 +96,18 @@
 
         <div class="action-row">
           <button id="markAllClearBtn">全チェック解除</button>
-          <button id="exportJsonBtn">JSONを書き出す</button>
-          <label class="file-btn">
-            JSONを読み込む
-            <input id="importJsonInput" type="file" accept="application/json" />
-          </label>
+          <button id="generateCodeBtn">復元コードを作成</button>
+          <button id="applyCodeBtn">復元コードを反映</button>
+          <button id="copyCodeBtn">コードをコピー</button>
+        </div>
+
+        <div class="recovery-box">
+          <div class="recovery-head">
+            <strong>復元コード</strong>
+            <span>この欄に表示されたコードをコピーして別端末へ貼り付けできます。</span>
+          </div>
+          <textarea id="recoveryCodeArea" rows="5" placeholder="「復元コードを作成」で表示。別端末から移すときはここに貼り付けて「復元コードを反映」を押してください。"></textarea>
+          <div id="recoveryHint" class="recovery-hint">コードはこの欄に表示されます。</div>
         </div>
       </section>
 

@@ -1,5 +1,5 @@
-const STORAGE_KEY = "mcu-checklist-v3";
-const APP_VERSION = 3;
+const STORAGE_KEY = "mcu-checklist-v4";
+const APP_VERSION = 4;
 
 const MCU_ITEMS = [
   { id: "iron-man", titleJa: "アイアンマン", titleEn: "Iron Man", type: "film", releaseDate: "2008-05-02", year: 2008, phase: 1, upcoming: false },
@@ -73,22 +73,25 @@ const MCU_ITEMS = [
   { id: "blade", titleJa: "ブレイド", titleEn: "Blade", type: "film", releaseDate: "2028-01-01", year: 2028, phase: 6, upcoming: true }
 ];
 
+
+const DEFAULT_SETTINGS = {
+  search: "",
+  statusFilter: "all",
+  typeFilter: "all",
+  sortOrder: "asc",
+  hideUpcoming: false,
+  imageWatchedOnly: true,
+  imageHideRatings: false,
+  imageCompact: false,
+  imageTheme: "dark",
+  imageTitle: "My MCU Checklist",
+  imageSubtitle: "公開順チェックリスト",
+  imageSortOrder: "asc"
+};
+
 const state = {
   items: {},
-  settings: {
-    search: "",
-    statusFilter: "all",
-    typeFilter: "all",
-    sortOrder: "asc",
-    hideUpcoming: false,
-    imageWatchedOnly: true,
-    imageHideRatings: false,
-    imageCompact: false,
-    imageTheme: "dark",
-    imageTitle: "My MCU Checklist",
-    imageSubtitle: "公開順チェックリスト",
-    imageSortOrder: "asc"
-  }
+  settings: { ...DEFAULT_SETTINGS }
 };
 
 const els = {};
@@ -107,7 +110,8 @@ function bindElements() {
     "imageTitleInput", "imageSubtitleInput", "imageSortOrder",
     "itemsList", "visibleCount", "statWatched", "statTotal", "statAverage", "statProgress",
     "shareItems", "shareSummary", "shareTitle", "shareSubtitle", "saveImageBtn", "shareBtn",
-    "exportJsonBtn", "importJsonInput", "markAllClearBtn", "shareCard"
+    "markAllClearBtn", "shareCard", "generateCodeBtn", "applyCodeBtn", "copyCodeBtn",
+    "recoveryCodeArea", "recoveryHint"
   ];
   ids.forEach((id) => {
     els[id] = document.getElementById(id);
@@ -128,11 +132,12 @@ function bindEvents() {
   els.imageSubtitleInput.addEventListener("input", (e) => updateSetting("imageSubtitle", e.target.value));
   els.imageSortOrder.addEventListener("change", (e) => updateSetting("imageSortOrder", e.target.value));
 
-  els.exportJsonBtn.addEventListener("click", exportJson);
-  els.importJsonInput.addEventListener("change", importJson);
   els.markAllClearBtn.addEventListener("click", clearAllChecks);
   els.saveImageBtn.addEventListener("click", saveShareImage);
   els.shareBtn.addEventListener("click", shareImageOrUrl);
+  els.generateCodeBtn.addEventListener("click", generateRecoveryCode);
+  els.applyCodeBtn.addEventListener("click", applyRecoveryCode);
+  els.copyCodeBtn.addEventListener("click", copyRecoveryCode);
 }
 
 function loadState() {
@@ -142,8 +147,8 @@ function loadState() {
     if (!raw) return applySettingsToControls();
     const saved = JSON.parse(raw);
     if (saved && typeof saved === "object") {
-      state.items = saved.items || {};
-      state.settings = { ...state.settings, ...(saved.settings || {}) };
+      state.items = sanitizeItems(saved.items);
+      state.settings = sanitizeSettings(saved.settings);
     }
   } catch (error) {
     console.error("Failed to load state", error);
@@ -155,7 +160,7 @@ function migrateLegacyState() {
   try {
     if (localStorage.getItem(STORAGE_KEY)) return;
 
-    const legacyKeys = ["mcu-checklist-v2", "mcu-checklist-v1"];
+    const legacyKeys = ["mcu-checklist-v3", "mcu-checklist-v2", "mcu-checklist-v1"];
     for (const key of legacyKeys) {
       const legacyRaw = localStorage.getItem(key);
       if (!legacyRaw) continue;
@@ -166,17 +171,49 @@ function migrateLegacyState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         version: APP_VERSION,
         updatedAt: new Date().toISOString(),
-        items: legacy.items || {},
-        settings: {
-          ...state.settings,
-          ...(legacy.settings || {})
-        }
+        items: sanitizeItems(legacy.items),
+        settings: sanitizeSettings(legacy.settings)
       }));
       break;
     }
   } catch (error) {
     console.error("Failed to migrate legacy state", error);
   }
+}
+
+function sanitizeItems(input) {
+  const clean = {};
+  if (!input || typeof input !== "object") return clean;
+
+  MCU_ITEMS.forEach((item) => {
+    const raw = input[item.id];
+    if (!raw || typeof raw !== "object") return;
+    const watched = Boolean(raw.watched);
+    const rating = clampRating(raw.rating);
+    if (watched || rating) {
+      clean[item.id] = { watched, rating };
+    }
+  });
+
+  return clean;
+}
+
+function sanitizeSettings(input) {
+  const merged = { ...DEFAULT_SETTINGS, ...(input || {}) };
+  return {
+    search: typeof merged.search === "string" ? merged.search : DEFAULT_SETTINGS.search,
+    statusFilter: ["all", "watched", "unwatched", "rated", "upcoming"].includes(merged.statusFilter) ? merged.statusFilter : DEFAULT_SETTINGS.statusFilter,
+    typeFilter: ["all", "film", "series", "special", "short"].includes(merged.typeFilter) ? merged.typeFilter : DEFAULT_SETTINGS.typeFilter,
+    sortOrder: ["asc", "desc"].includes(merged.sortOrder) ? merged.sortOrder : DEFAULT_SETTINGS.sortOrder,
+    hideUpcoming: Boolean(merged.hideUpcoming),
+    imageWatchedOnly: Boolean(merged.imageWatchedOnly),
+    imageHideRatings: Boolean(merged.imageHideRatings),
+    imageCompact: Boolean(merged.imageCompact),
+    imageTheme: ["dark", "light"].includes(merged.imageTheme) ? merged.imageTheme : DEFAULT_SETTINGS.imageTheme,
+    imageTitle: typeof merged.imageTitle === "string" ? merged.imageTitle : DEFAULT_SETTINGS.imageTitle,
+    imageSubtitle: typeof merged.imageSubtitle === "string" ? merged.imageSubtitle : DEFAULT_SETTINGS.imageSubtitle,
+    imageSortOrder: ["asc", "desc"].includes(merged.imageSortOrder) ? merged.imageSortOrder : DEFAULT_SETTINGS.imageSortOrder
+  };
 }
 
 function applySettingsToControls() {
@@ -200,8 +237,8 @@ function persistState() {
     JSON.stringify({
       version: APP_VERSION,
       updatedAt: new Date().toISOString(),
-      items: state.items,
-      settings: state.settings
+      items: sanitizeItems(state.items),
+      settings: sanitizeSettings(state.settings)
     })
   );
 }
@@ -219,6 +256,12 @@ function getEntry(id) {
   return state.items[id];
 }
 
+function clampRating(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(5, Math.round(number)));
+}
+
 function setWatched(id, watched) {
   const entry = getEntry(id);
   entry.watched = watched;
@@ -228,7 +271,7 @@ function setWatched(id, watched) {
 
 function setRating(id, rating) {
   const entry = getEntry(id);
-  entry.rating = rating;
+  entry.rating = clampRating(rating);
   persistState();
   render();
 }
@@ -442,41 +485,172 @@ function clearAllChecks() {
   state.items = {};
   persistState();
   render();
+  setRecoveryHint("視聴チェックと評価を初期化しました。");
 }
 
-function exportJson() {
-  const payload = {
-    version: APP_VERSION,
-    exportedAt: new Date().toISOString(),
-    items: state.items,
-    settings: state.settings
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  downloadBlob(blob, `mcu-checklist-backup-${new Date().toISOString().slice(0, 10)}.json`);
+function generateRecoveryCode() {
+  try {
+    const code = encodeRecoveryCode();
+    els.recoveryCodeArea.value = code;
+    els.recoveryCodeArea.focus();
+    els.recoveryCodeArea.select();
+    setRecoveryHint("現在の状態から復元コードを生成しました。");
+  } catch (error) {
+    console.error(error);
+    setRecoveryHint("復元コードの生成に失敗しました。", true);
+  }
 }
 
-function importJson(event) {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(String(reader.result));
-      if (!parsed || typeof parsed !== "object") throw new Error("invalid json");
-      state.items = parsed.items || {};
-      state.settings = { ...state.settings, ...(parsed.settings || {}) };
-      persistState();
-      applySettingsToControls();
-      render();
-      window.alert("バックアップを読み込みました。");
-    } catch (error) {
-      console.error(error);
-      window.alert("JSONの読み込みに失敗しました。");
-    } finally {
-      event.target.value = "";
+async function copyRecoveryCode() {
+  try {
+    const code = els.recoveryCodeArea.value.trim() || encodeRecoveryCode();
+    els.recoveryCodeArea.value = code;
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(code);
+    } else {
+      els.recoveryCodeArea.focus();
+      els.recoveryCodeArea.select();
+      document.execCommand("copy");
     }
+
+    setRecoveryHint("復元コードをコピーしました。");
+  } catch (error) {
+    console.error(error);
+    setRecoveryHint("復元コードのコピーに失敗しました。", true);
+  }
+}
+
+function applyRecoveryCode() {
+  const raw = els.recoveryCodeArea.value.trim();
+  if (!raw) {
+    setRecoveryHint("復元コードを入力してください。", true);
+    return;
+  }
+
+  try {
+    const restored = decodeRecoveryCode(raw);
+    state.items = sanitizeItems(restored.items);
+    state.settings = sanitizeSettings(restored.settings);
+    persistState();
+    applySettingsToControls();
+    render();
+    setRecoveryHint("復元コードから状態を読み込みました。");
+  } catch (error) {
+    console.error(error);
+    setRecoveryHint("復元コードの読み込みに失敗しました。", true);
+  }
+}
+
+function setRecoveryHint(message, isError = false) {
+  if (!els.recoveryHint) return;
+  els.recoveryHint.textContent = message;
+  els.recoveryHint.classList.toggle("error", isError);
+}
+
+function encodeRecoveryCode() {
+  const itemsPart = encodeItemsToBase64Url();
+  const settingsPart = encodeSettingsToBase64Url();
+  return settingsPart ? `MCU4.${itemsPart}.${settingsPart}` : `MCU4.${itemsPart}`;
+}
+
+function decodeRecoveryCode(code) {
+  const parts = code.trim().split(".");
+  if (parts.length < 2 || parts[0] !== "MCU4") {
+    throw new Error("invalid recovery code");
+  }
+
+  return {
+    items: decodeItemsFromBase64Url(parts[1]),
+    settings: parts[2] ? decodeSettingsFromBase64Url(parts[2]) : { ...DEFAULT_SETTINGS }
   };
-  reader.readAsText(file, "utf-8");
+}
+
+function encodeItemsToBase64Url() {
+  const bytes = new Uint8Array(Math.ceil(MCU_ITEMS.length / 2));
+
+  MCU_ITEMS.forEach((item, index) => {
+    const entry = getEntry(item.id);
+    const watchedBit = entry.watched ? 1 : 0;
+    const packedValue = watchedBit | (clampRating(entry.rating) << 1);
+    const byteIndex = Math.floor(index / 2);
+
+    if (index % 2 === 0) {
+      bytes[byteIndex] |= packedValue & 0x0f;
+    } else {
+      bytes[byteIndex] |= (packedValue & 0x0f) << 4;
+    }
+  });
+
+  return bytesToBase64Url(bytes);
+}
+
+function decodeItemsFromBase64Url(encoded) {
+  const bytes = base64UrlToBytes(encoded);
+  const items = {};
+
+  MCU_ITEMS.forEach((item, index) => {
+    const byteIndex = Math.floor(index / 2);
+    const byte = bytes[byteIndex] || 0;
+    const packedValue = index % 2 === 0 ? (byte & 0x0f) : ((byte >> 4) & 0x0f);
+    const watched = Boolean(packedValue & 1);
+    const rating = clampRating(packedValue >> 1);
+
+    if (watched || rating) {
+      items[item.id] = { watched, rating };
+    }
+  });
+
+  return items;
+}
+
+function encodeSettingsToBase64Url() {
+  const changed = {};
+
+  Object.entries(state.settings).forEach(([key, value]) => {
+    if (JSON.stringify(value) !== JSON.stringify(DEFAULT_SETTINGS[key])) {
+      changed[key] = value;
+    }
+  });
+
+  if (!Object.keys(changed).length) return "";
+  return textToBase64Url(JSON.stringify(changed));
+}
+
+function decodeSettingsFromBase64Url(encoded) {
+  const text = base64UrlToText(encoded);
+  const parsed = JSON.parse(text);
+  if (!parsed || typeof parsed !== "object") throw new Error("invalid settings payload");
+  return parsed;
+}
+
+function bytesToBase64Url(bytes) {
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+
+function base64UrlToBytes(encoded) {
+  const normalized = encoded.replaceAll("-", "+").replaceAll("_", "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function textToBase64Url(text) {
+  const bytes = new TextEncoder().encode(text);
+  return bytesToBase64Url(bytes);
+}
+
+function base64UrlToText(encoded) {
+  const bytes = base64UrlToBytes(encoded);
+  return new TextDecoder().decode(bytes);
 }
 
 function getShareBackgroundColor() {
@@ -525,15 +699,6 @@ async function shareImageOrUrl() {
     window.alert("共有に失敗したため、画像保存に切り替えます。");
     await saveShareImage();
   }
-}
-
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 function downloadDataUrl(dataUrl, filename) {

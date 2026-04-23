@@ -459,3 +459,51 @@ label span {
     grid-column: 2;
   }
 }
+
+
+textarea {
+  width: 100%;
+  background: #0c152a;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.recovery-box {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+}
+
+.recovery-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.recovery-head strong {
+  font-size: 15px;
+}
+
+.recovery-head span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.recovery-hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.recovery-hint.error {
+  color: #ffb4b4;
+}
