@@ -1,6 +1,7 @@
 const STORAGE_KEY = "mcu-checklist-v4";
 const APP_VERSION = 5;
 const INTRO_PREF_KEY = "mcu-checklist-intro-hidden";
+const INTRO_SEEN_KEY = "mcu-checklist-intro-seen";
 
 const MCU_ITEMS = [
   { id: "iron-man", titleJa: "アイアンマン", titleEn: "Iron Man", type: "film", releaseDate: "2008-05-02", year: 2008, phase: 1, upcoming: false },
@@ -158,6 +159,11 @@ function bindEvents() {
       closeIntroModal();
     }
   });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && els.introModal && !els.introModal.hidden) {
+      closeIntroModal();
+    }
+  });
 }
 
 
@@ -186,22 +192,39 @@ function persistIntroPreference() {
 
 function maybeOpenIntroOnFirstVisit() {
   if (state.ui.hideIntroNextTime) return;
+  try {
+    const seen = localStorage.getItem(INTRO_SEEN_KEY) === "1";
+    if (seen) return;
+  } catch (error) {
+    console.error("Failed to load intro seen state", error);
+  }
   openIntroModal(true);
 }
 
 function openIntroModal(isAutoOpen = false) {
+  if (!els.introModal) return;
+  els.introModal.hidden = false;
   els.introModal.classList.add("open");
   els.introModal.setAttribute("aria-hidden", "false");
-  if (!isAutoOpen) {
-    els.hideIntroNextTime.checked = state.ui.hideIntroNextTime;
+  document.body.classList.add("modal-open");
+  els.hideIntroNextTime.checked = state.ui.hideIntroNextTime;
+  if (isAutoOpen) {
+    try {
+      localStorage.setItem(INTRO_SEEN_KEY, "1");
+    } catch (error) {
+      console.error("Failed to save intro seen state", error);
+    }
   }
 }
 
 function closeIntroModal() {
+  if (!els.introModal) return;
   state.ui.hideIntroNextTime = Boolean(els.hideIntroNextTime.checked);
   persistIntroPreference();
   els.introModal.classList.remove("open");
   els.introModal.setAttribute("aria-hidden", "true");
+  els.introModal.hidden = true;
+  document.body.classList.remove("modal-open");
 }
 
 function loadState() {

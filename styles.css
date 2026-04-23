@@ -541,11 +541,17 @@ textarea {
 .intro-modal {
   position: fixed;
   inset: 0;
-  display: none;
   z-index: 1000;
+  padding: 12px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.intro-modal[hidden] {
+  display: none !important;
 }
 .intro-modal.open {
-  display: block;
+  display: flex;
 }
 .intro-backdrop {
   position: absolute;
@@ -555,10 +561,11 @@ textarea {
 }
 .intro-dialog {
   position: relative;
+  z-index: 1;
   width: min(860px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
   overflow: auto;
-  margin: 12px auto;
+  margin: 0;
   padding: 18px;
 }
 .intro-header {
@@ -625,5 +632,23 @@ textarea {
 @media (max-width: 900px) {
   .trust-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  .intro-modal {
+    padding: 8px;
+    align-items: flex-start;
+  }
+  .intro-dialog {
+    width: min(100vw - 16px, 860px);
+    max-height: calc(100vh - 16px);
+    margin-top: 0;
+  }
+  .intro-header {
+    align-items: center;
   }
 }
